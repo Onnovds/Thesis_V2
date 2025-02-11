@@ -1,0 +1,4 @@
+/home/onno/satellite_test/build/CMakeFiles/satellite_test.dir
+/home/onno/satellite_test/build/CMakeFiles/satellite0.dir
+/home/onno/satellite_test/build/CMakeFiles/edit_cache.dir
+/home/onno/satellite_test/build/CMakeFiles/rebuild_cache.dir

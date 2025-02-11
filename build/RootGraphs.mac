@@ -1,0 +1,32 @@
+#include<iostream>
+#include"TH1D.h"
+using namespace std;
+
+{
+	c1 = new TCanvas("c1", "My Root Plots", 256, 256);
+	c1-> Divide(2,1);
+	
+	c1->cd(1);
+	f1 = new TF1("f1", "sin(x)", 0, 5);
+	f1->SetLineColor(kBlue+2);
+	f1->SetTitle("My Function; X axis; Y (miles)");
+	f1->Draw();
+	
+	c1->cd(2);
+	g = new TGraph("data.txt");
+	g->SetMarkerStyle(21);
+	g->SetLineColor(kRed);
+	g->SetTitle("Test Plot;x;y")
+	
+}
+
+
+
+
+
+/* SetDrawOption:
+
+surf1 option (3D view)
+colz option (colour 2D view)
+
+*/

@@ -1,0 +1,4 @@
+# Ignore large files
+*.zip
+pythonProject/Raw_data/
+
