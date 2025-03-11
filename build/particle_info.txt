@@ -1,2 +1,2 @@
-Particle: e-
-Energy: 0.09 MeV
+Particle: gamma
+Energy: 0.5 MeV

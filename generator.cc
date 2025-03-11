@@ -7,12 +7,12 @@ MyPrimaryGenerator::MyPrimaryGenerator()
 	fParticleGun = new G4ParticleGun(1); 
 	
     G4ParticleTable *particleTable = G4ParticleTable::GetParticleTable();
-	G4String particleName="e-";
+	G4String particleName="gamma";
 	G4ParticleDefinition *particle = particleTable->FindParticle(particleName);
 	
 	G4ThreeVector mom(0.,0.,1.); 
 	
-	G4double energy = 0.09*MeV; // Energy of the beam
+	G4double energy = 0.5*MeV; // Energy of the beam
 
 	fParticleGun->SetParticleMomentumDirection(mom);
 	fParticleGun->SetParticleEnergy(energy); 

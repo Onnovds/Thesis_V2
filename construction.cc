@@ -74,7 +74,7 @@ G4VPhysicalVolume *MyDetectorConstruction::Construct()
 	//Commented out: No Al slab, Otherwise with 
 	
 	
-	G4double slabWidth = 10.75*mm;  // Thickness of the slab 
+	G4double slabWidth = 5*mm;  // Thickness of the slab 
 	G4Box *solidSlab = new G4Box("solidSlab", 0.25*m, 0.25*m, slabWidth/2); //Half-thickness should be given 
 	G4LogicalVolume *logicSlab = new G4LogicalVolume(solidSlab, Aluminium, "logicSlab");
 	G4VPhysicalVolume *physSlab = new G4PVPlacement(0, G4ThreeVector(0., 0., 0.+slabWidth/2), logicSlab, "physSlab", logicWorld, false, 0, true);   //Middle of volume

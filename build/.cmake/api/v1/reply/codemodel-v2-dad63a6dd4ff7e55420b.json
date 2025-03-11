@@ -48,7 +48,7 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "satellite_test::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-satellite_test-ac3a7f37d20f9055597b.json",
+					"jsonFile" : "target-satellite_test-7c2c64e791a873abade3.json",
 					"name" : "satellite_test",
 					"projectIndex" : 0
 				}
@@ -64,6 +64,6 @@
 	"version" : 
 	{
 		"major" : 2,
-		"minor" : 3
+		"minor" : 6
 	}
 }

@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import fsolve
+from scipy.interpolate import interp1d
 #from Bethe_bloch_constants import K, z, m_p, m_e, me_c2
 
 # Constants
@@ -49,6 +50,9 @@ def max_Ekin_proton(me, mp, beta):
 
 def kinetic_energy(beta):   #(gamma-1)*m*c^2 
     # This is to get kinetic energy once we have velocity
+    for i in range(len(beta)):
+        if beta[i] < 0.01:
+            print("ALARM", beta[i])
     m = 1.67e-27 #in kg
     c = 3e8 #in m/s
     Ekin_proton = m*c**2*(1/np.sqrt(1-beta**2)-1)*6.241509e15 #in keV       #(gamma-1)*m*c**2 = total energy - rest energy = Ekin
@@ -227,3 +231,83 @@ def calculate_kinetic_energy_backward(Ekin_start, material, width, dx, distance_
     Ekin_values = [float(value) for value in Ekin_values]
     LET_values = [float(value) for value in LET_values]
     return Ekin_values, LET_values, distance_values
+
+
+
+
+#------------------------------------Vectorised version of the function-------------------------------------
+
+
+# Precompute beta values for LET
+LET_range_Silicon = np.linspace(0.419, 4.0, 1000)  # Define a range of LET values --- 0.419keV/um --> 1GeV proton in Silicon, 4.0keV/um --> ~24MeV proton in Air
+beta_solutions_Silicon = np.array([beta_from_LET_value(LET, "Silicon") for LET in LET_range_Silicon])
+beta_interp_Silicon = interp1d(LET_range_Silicon, beta_solutions_Silicon, kind='cubic', fill_value="extrapolate")
+
+def beta_from_LET_list_Silicon_vectorised(LET_data):
+    return beta_interp_Silicon(LET_data)  # Interpolated instead of solving each time
+
+LET_range_Air = np.linspace(2.352e-04, 0.01411, 1000)  # Define a range of LET values --- 2.352e-4keV/um --> 1GeV proton in Air, 0.01411keV/um --> 1keV proton in Air
+beta_solutions_Air = np.array([beta_from_LET_value(LET, "Air") for LET in LET_range_Air])
+beta_interp_Air = interp1d(LET_range_Air, beta_solutions_Air, kind='cubic', fill_value="extrapolate")
+
+def beta_from_LET_list_Air_vectorised(LET_data):
+    return beta_interp_Air(LET_data)  # Interpolated instead of solving each time
+
+
+
+def calculate_kinetic_energy_backward_optimised(Ekin_start_array, material, width, dx, distance_from_generator):
+
+    steps = int(width / dx)
+    
+
+    # Create matrix where each row is a data point and columns are the steps
+    Ekin_values = np.zeros((len(Ekin_start_array), steps + 1))
+    LET_values = np.zeros((len(Ekin_start_array), steps + 1))
+
+    # Set the initial conditions for all values at the same time
+    Ekin_values[:, 0] = Ekin_start_array
+    beta_values = beta_from_kinetic_energy(Ekin_start_array)  # Initial beta
+    LET_values[:, 0] = LET_from_beta(beta_values, material)  # Get LET
+
+    # Create vector of distances
+    distances = np.linspace(distance_from_generator, distance_from_generator - width, steps) / 1e4
+
+    # Vectorised kinetic energy update
+    for i in range(1, steps + 1):
+        Ekin_values[:, i] = Ekin_values[:, i - 1] + LET_values[:, i - 1] * dx
+        beta_values = beta_from_kinetic_energy(Ekin_values[:, i])
+        LET_values[:, i] = LET_from_beta(beta_values, material)
+
+    return Ekin_values, LET_values, distances
+
+def calculate_kinetic_energy_backward_optimised2(Ekin_start_array, material, width, dx, distance_from_generator):
+    """
+    Optimised backward kinetic energy calculation (avoids huge memory usage).
+
+    Parameters:
+    - Ekin_start_array (np.array): Kinetic energy at the detector (keV).
+    - material (str): Material medium (e.g., "Air").
+    - width (float): Total distance traveled (μm).
+    - dx (float): Step size (μm).
+    - distance_from_generator (float): Initial distance from source (μm).
+
+    Returns:
+    - Ekin_final: Array of kinetic energy at the source.
+    """
+
+    num_steps = int(width / dx)
+
+    # Create array for step distances (shape: (num_steps,))
+    distances = np.linspace(distance_from_generator, distance_from_generator - width, num_steps)
+
+    # Initialise kinetic energy values (shape: (num_particles,))
+    Ekin_values = np.copy(Ekin_start_array)
+
+    for _ in range(num_steps):
+        beta_values = beta_from_kinetic_energy(Ekin_values)  # Vectorised beta computation
+        LET_values = LET_from_beta(beta_values, material)  # Vectorised LET computation
+        Ekin_values += LET_values * dx  # Vectorised energy update
+
+    return Ekin_values  # Only return final kinetic energy per particle
+
+#------------------------------------------------------------------------------------------------------------
