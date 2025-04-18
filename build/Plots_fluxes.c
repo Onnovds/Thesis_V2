@@ -1,9 +1,9 @@
 {
-    std::string title = "100kProton200MeV_Al_Slab_5mm_Vacuum_fStopandKill_afterSlab"; // Define your title here
+    std::string title = "100kProton2000MeV_Al_Slab_5mm_Vacuum_fStopandKill_afterSlab_V4"; // Define your title here
     std::string filename = title + ".root";      // Use the title in the filename
 
     float GeneratedParticles = 100000;
-    float GeneratorEnergy = 35.5;
+    float GeneratorEnergy = 200;
     const char* GeneratedParticleType = "Proton";
     const char* WorldVolume = "G4_Air";
     const char* Shielding = "Aluminium 5.0mm";
@@ -18,7 +18,7 @@
 
     Double_t x, y, z, Ek, Edep, LET;
     Int_t events, ParentID;
-    Char_t Type;
+    char Type[20]; 
 
     tree->SetBranchAddress("fEvent", &events);
     tree->SetBranchAddress("fX", &x);
@@ -41,7 +41,9 @@
     TH2F *hSecondaryProtons = new TH2F("hSecondaryProtons", "Hits of secondary particles;X (mm); Y(mm)", bins, min, max, bins, min, max);
     TH2F *hPrimaryElectrons = new TH2F("hPrimaryElectrons", "Hits of primary electrons;X (mm); Y(mm)", bins, min, max, bins, min, max);
     TH2F *hSecondaryElectrons = new TH2F("hSecondaryElectrons", "Hits of secondary electrons;X (mm); Y(mm)", bins, min, max, bins, min, max);
+    TH2F *hPrimaryGammas = new TH2F("hPrimaryGammas", "Hits of primary gammas;X (mm); Y(mm)", bins, min, max, bins, min, max);
     TH2F *hSecondaryGammas = new TH2F("hSecondaryGammas", "Hits of secondary gammas;X (mm); Y(mm)", bins, min, max, bins, min, max);
+    TH2F *hSecondaryNeutrons = new TH2F("hSecondaryNeutrons", "Hits of neutrons;X (mm); Y(mm)", bins, min, max, bins, min, max);    
     TH2F *hSecondaryOthers = new TH2F("hSecondaryOthers", "Hits of secondary others;X (mm); Y(mm)", bins, min, max, bins, min, max);
 
     // Loop over all entries in the tree to fill the histograms
@@ -51,24 +53,29 @@
 
          // Primary Particles (ParentID == 0)
         if (ParentID == 0) {
-            if (Type == 'p'){
+            if (strcmp(Type, "proton") == 0) {
                 hPrimaryProtons->Fill(x, y);}
-            else if (Type == 'e'){
+            else if (strcmp(Type, "e-") == 0) {
                 hPrimaryElectrons->Fill(x, y);}
+            else if (strcmp(Type, "gamma") == 0) {
+                hPrimaryGammas->Fill(x, y);}
         } 
         // Secondary Particles (ParentID > 0)
         else {
-            if (Type == 'p'){
-                hSecondaryProtons->Fill(x, y);}
-            else if (Type == 'e'){
-                hSecondaryElectrons->Fill(x, y);}
-            else if (Type == 'g'){
-                hSecondaryGammas->Fill(x, y);}
+            if (strcmp(Type, "proton") == 0) {
+              hSecondaryProtons->Fill(x, y);}           
+            else if (strcmp(Type, "e-") == 0) {
+              hSecondaryElectrons->Fill(x, y);}           
+            else if (strcmp(Type, "gamma") == 0) {
+              hSecondaryGammas->Fill(x, y);
+}           else if (strcmp(Type, "neutron") == 0) {
+              hSecondaryNeutrons->Fill(x, y);}
             else {
-                hSecondaryOthers->Fill(x, y);}
-        }
+              hSecondaryOthers->Fill(x, y);
+}           
 
-    }
+
+    } }
 
 // FLUX Plots
 
@@ -109,7 +116,8 @@
     gPad->SetBottomMargin(0.1);
     gPad->SetTopMargin(0.1);
     hPrimaryProtons->Draw("COLZ");
-    hPrimaryElectrons->Draw("SAME");
+    //hPrimaryElectrons->Draw("COLZ");
+    //hPrimaryGammas->Draw("COLZ");
     TPaveText *legend_primary = new TPaveText(0.48, 0.75, 0.89, 0.9, "NDC"); // Using TPaveText instead of Tlegend because of whitespace
     legend_primary->SetFillColor(0);  // Transparent background
     legend_primary->SetBorderSize(1); // Thin black border
@@ -118,7 +126,8 @@
     legend_primary->SetTextAlign(12); // Left-aligned text
 
     legend_primary->AddText(Form("Primary Protons: %g", hPrimaryProtons->GetEntries()));
-    legend_primary->AddText(Form("Primary Electrons: %g", hPrimaryElectrons->GetEntries()));
+    //legend_primary->AddText(Form("Primary Electrons: %g", hPrimaryElectrons->GetEntries()));
+    //legend_primary->AddText(Form("Primary Gammas: %g", hPrimaryGammas->GetEntries()));
     legend_primary->Draw();
     //box->Draw();
     
@@ -142,6 +151,7 @@
     legend_secondary->AddText(Form("Secondary Protons: %g", hSecondaryProtons->GetEntries()));
     legend_secondary->AddText(Form("Secondary Electrons: %g", hSecondaryElectrons->GetEntries()));
     legend_secondary->AddText(Form("Secondary Gammas: %g", hSecondaryGammas->GetEntries()));
+    legend_secondary->AddText(Form("Secondary Neutrons: %g", hSecondaryNeutrons->GetEntries()));
     legend_secondary->AddText(Form("Secondary Others: %g", hSecondaryOthers->GetEntries()));
 
     // Draw the text box

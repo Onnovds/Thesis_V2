@@ -627,4 +627,11 @@ CMakeFiles/satellite_test.dir/physics.cc.o: \
  /home/onno/Software/Geant4/geant4-v11.2.1-install/include/Geant4/G4HadronicProcessType.hh \
  /home/onno/Software/Geant4/geant4-v11.2.1-install/include/Geant4/G4CrossSectionDataStore.hh \
  /home/onno/Software/Geant4/geant4-v11.2.1-install/include/Geant4/G4VCrossSectionDataSet.hh \
- /home/onno/Software/Geant4/geant4-v11.2.1-install/include/Geant4/G4HadXSTypes.hh
+ /home/onno/Software/Geant4/geant4-v11.2.1-install/include/Geant4/G4HadXSTypes.hh \
+ /home/onno/Software/Geant4/geant4-v11.2.1-install/include/Geant4/G4HadronPhysicsQGSP_BIC_HP.hh \
+ /home/onno/Software/Geant4/geant4-v11.2.1-install/include/Geant4/G4HadronPhysicsQGSP_BIC.hh \
+ /home/onno/Software/Geant4/geant4-v11.2.1-install/include/Geant4/G4StoppingPhysics.hh \
+ /home/onno/Software/Geant4/geant4-v11.2.1-install/include/Geant4/G4IonPhysics.hh \
+ /home/onno/Software/Geant4/geant4-v11.2.1-install/include/Geant4/G4NeutronTrackingCut.hh \
+ /home/onno/Software/Geant4/geant4-v11.2.1-install/include/Geant4/G4RadioactiveDecayPhysics.hh \
+ /home/onno/Software/Geant4/geant4-v11.2.1-install/include/Geant4/G4EmLivermorePhysics.hh

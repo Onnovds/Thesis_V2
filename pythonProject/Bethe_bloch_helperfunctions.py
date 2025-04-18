@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import fsolve
 from scipy.interpolate import interp1d
+from numpy.polynomial.polynomial import Polynomial
 #from Bethe_bloch_constants import K, z, m_p, m_e, me_c2
 
 # Constants
@@ -17,6 +18,9 @@ def get_material_constants(material):
         "Aluminium": {"Z": 13, "A": 26.98, "rho": 2.70, "fit_factor": 1.61, "fit_factor_air": 1.0},
         "Silicon": {"Z": 14, "A": 28.085, "rho": 2.33, "fit_factor": 1.58, "fit_factor_air": 1.0},
         "Air": {"Z": 8.2, "A": 28.96, "rho": 1.20479E-03, "fit_factor": 1.0, "fit_factor_air": 1.83},
+       # "Aluminium": {"Z": 13, "A": 26.98, "rho": 2.70, "fit_factor": 1.0, "fit_factor_air": 1.0},
+       # "Silicon": {"Z": 14, "A": 28.085, "rho": 2.33, "fit_factor": 1.0, "fit_factor_air": 1.0},
+       # "Air": {"Z": 8.2, "A": 28.96, "rho": 1.20479E-03, "fit_factor": 1.0, "fit_factor_air": 1.0},
     }
 
     if material not in materials:
@@ -52,17 +56,17 @@ def kinetic_energy(beta):   #(gamma-1)*m*c^2
     # This is to get kinetic energy once we have velocity
     for i in range(len(beta)):
         if beta[i] < 0.01:
-            print("ALARM", beta[i])
+            print("ALARM", beta[i], i)     
     m = 1.67e-27 #in kg
     c = 3e8 #in m/s
     Ekin_proton = m*c**2*(1/np.sqrt(1-beta**2)-1)*6.241509e15 #in keV       #(gamma-1)*m*c**2 = total energy - rest energy = Ekin
     #Ekin_proton = m*c**2*(1/np.sqrt(1-beta**2)-1)*6.241509e15 #in MeV
     return Ekin_proton
-def kinetic_energy2(beta, m): #1/2mv^2
-    # This is to get kinetic energy once we have velocity
-    #Ekin_proton = m*c**2*(1/np.sqrt(1-beta**2)-1)*6.241509e12 #in MeV       #(gamma-1)*m*c**2 = total energy - rest energy = Ekin
+def kinetic_energy2(beta): #(gamma-1)*m*c^
+    # This is to get kinetic energy from single beta
+    m = 1.67e-27 #in kg
     c = 3e8 #in m/s
-    Ekin_proton = 1/2*m*beta**2*c**2*6.241509e12 #in MeV
+    Ekin_proton = m*c**2*(1/np.sqrt(1-beta**2)-1)*6.241509e15 #in keV       #(gamma-1)*m*c**2 = total energy - rest energy = Ekin
     return Ekin_proton
 
 def beta_from_kinetic_energy(Ekin): #in keV
@@ -88,13 +92,15 @@ def beta_from_LET_list(LET_data, material): #in keV/um
         else:
             I = Ionisation_constant(Z)
         
-        if LET_data[i] < 1 or LET_data[i] > 4: #Ignore LET values that are too low or too high
+        '''
+        if LET_data[i] < 0.01 or LET_data[i] > 10: #Ignore LET values that are too low or too high --> 
             LET_data[i] = 0 
             beta_solution[i] = 0
             continue
-        
-        Correction_factor = 1.6
-        dEdx = round(Correction_factor*LET_data[i]*10, 5) #  keV/um to MeV/cm
+        ''' 
+
+        #Correction_factor = 1.6    #Correction factor for LET values but I don't know for what anymore
+        dEdx = round(LET_data[i]*10, 5) #  keV/um to MeV/cm
         func = lambda beta : -dEdx + fit_factor_air*K*Z/A*rho*z**2/beta**2*(0.5*np.log(fit_factor*2*me_c2**2*beta**2*relativistic_factor(beta)**2*max_Ekin_proton(m_e, m_p, beta)/I**2) - beta**2)
         #func = lambda beta : dEdx + K*Z/A*rho*z**2/beta**2*(np.log(2*m_e*beta**2*(relativistic_factor(beta))**2/I) - beta**2)
         #func = lambda beta : dEdx + K*Z/(A*beta**2)*(np.log(2*m_e*c_cm**2*beta**2/(1-beta**2)/I)-beta**2)
@@ -102,17 +108,24 @@ def beta_from_LET_list(LET_data, material): #in keV/um
         # Normalise LET_value
         LET_normalised = LET_data[i] / (rho * Z)
         # Dynamically set beta_initial_guess based on LET and material properties
-        if LET_normalised> 0.1:  # Use atomic number Z as a threshold for high LET
-            beta_initial_guess = 0.1
+        # This only partially works --> best to adjust for every material
+        if LET_normalised> 0.6:
+            beta_initial_guess = 0.03        
+        elif LET_normalised> 0.1:  # Use atomic number Z as a threshold for high LET
+            beta_initial_guess = 0.07
         elif LET_normalised > 0.05:  # Adjust for mid-range LET
             beta_initial_guess = 0.33
         else:  # Low LET
             beta_initial_guess = 0.55
         beta_solution[i] = fsolve(func, beta_initial_guess).item()
+        if beta_solution[i] < 0:
+            print("The solution is incorrect as velocity is negative")
+            print("The LET value is: ", LET_data[i])
+            print("The LET_normalised value is: ", LET_normalised)
     for j in range(len(beta_solution)):         #Check if the solution is correct
         if beta_solution[j] < 0:
             print("The solution is incorrect as velocity is negative")
-        #print("The beta solution is: ", beta_solution[j])
+            print("The beta initial guess is: ", beta_initial_guess)
     return beta_solution
 
 def beta_from_LET_value(LET_value, material): #in keV/um
@@ -137,7 +150,9 @@ def beta_from_LET_value(LET_value, material): #in keV/um
     #print("LET_normalised=", LET_normalised)
     
     # Dynamically set beta_initial_guess based on LET and material properties
-    if LET_normalised> 0.1:  # Use atomic number Z as a threshold for high LET
+    if LET_normalised> 0.6:
+        beta_initial_guess = 0.05
+    elif LET_normalised> 0.1:  # Use atomic number Z as a threshold for semi-high LET
         beta_initial_guess = 0.1
     elif LET_normalised > 0.05:  # Adjust for mid-range LET
         beta_initial_guess = 0.33
@@ -147,6 +162,8 @@ def beta_from_LET_value(LET_value, material): #in keV/um
     #Check if the solution is correct
     if beta_solution < 0:
         print("The solution is incorrect as velocity is negative")
+        print("The LET value is: ", LET_value)
+        print("The LET_normalised value is: ", LET_normalised)
     return beta_solution
 
 def percentage_error(SRIM_data, calculated_data):
@@ -239,9 +256,16 @@ def calculate_kinetic_energy_backward(Ekin_start, material, width, dx, distance_
 
 
 # Precompute beta values for LET
-LET_range_Silicon = np.linspace(0.419, 4.0, 1000)  # Define a range of LET values --- 0.419keV/um --> 1GeV proton in Silicon, 4.0keV/um --> ~24MeV proton in Air
-beta_solutions_Silicon = np.array([beta_from_LET_value(LET, "Silicon") for LET in LET_range_Silicon])
-beta_interp_Silicon = interp1d(LET_range_Silicon, beta_solutions_Silicon, kind='cubic', fill_value="extrapolate")
+# Define range
+x_min, x_max = 0.419, 59.28
+n_points = 1000  # Total points
+
+# Exponential scaling
+scaled_values = np.linspace(0, np.log1p(x_max - x_min), n_points)  # Log-space
+LET_range_Silicon_log = np.expm1(scaled_values) + x_min  # Reverse log transform --> log scale as we want more points at lower LET values
+#LET_range_Silicon = np.linspace(0.419, 59.28 , 1000)  # Define a range of LET values --- 0.419keV/um --> 1GeV proton in Silicon, 59.28keV/um --> ~0.5MeV proton in Silicon
+beta_solutions_Silicon = np.array([beta_from_LET_value(LET, "Silicon") for LET in LET_range_Silicon_log])
+beta_interp_Silicon = interp1d(LET_range_Silicon_log, beta_solutions_Silicon, kind='cubic', fill_value="extrapolate")
 
 def beta_from_LET_list_Silicon_vectorised(LET_data):
     return beta_interp_Silicon(LET_data)  # Interpolated instead of solving each time
@@ -311,3 +335,82 @@ def calculate_kinetic_energy_backward_optimised2(Ekin_start_array, material, wid
     return Ekin_values  # Only return final kinetic energy per particle
 
 #------------------------------------------------------------------------------------------------------------
+
+
+# --------------------------------------- Electron formulas ---------------------------------------
+
+def LET_to_Ekin_function(LET_column, Ekin_column):
+
+    degree = 4 # Polynomial degree for fitting --> adjust if necessary
+    # Convert E_kin to log-space for better fitting
+    log_Ekin = np.log10(Ekin_column)
+    
+    # Fit polynomial in log-space
+    coefs = np.polyfit(LET_column, log_Ekin, deg=degree)  
+    LET_to_logEkin_poly = np.poly1d(coefs)
+
+    # Function to predict Ekin from LET
+    def predict_Ekin(LET_values):
+        return 10 ** LET_to_logEkin_poly(LET_values)  # Convert back from log-space
+    
+    return predict_Ekin
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from scipy.interpolate import interp1d
+
+# Load data
+Electron_in_Aluminium_1_5plus = np.array(pd.read_csv("/home/onno/satellite_test/pythonProject/Electrons_in_Aluminium_10keV_1GeV_ESTAR.txt", sep='\s+', header=2))[34:, :]
+Electron_in_Aluminium_1_5min= np.array(pd.read_csv("/home/onno/satellite_test/pythonProject/Electrons_in_Aluminium_10keV_1GeV_ESTAR.txt", sep='\s+', header=2))[:34, :]
+print(Electron_in_Aluminium_1_5min[-1])
+
+# Extract LET (converted to keV/µm) and kinetic energy
+LET_data_1_5plus = Electron_in_Aluminium_1_5plus[:,3] * 2.7 / 10
+Ekin_data_1_5plus = Electron_in_Aluminium_1_5plus[:,0]
+
+LET_data_1_5min = Electron_in_Aluminium_1_5min[:,3] * 2.7 / 10
+Ekin_data_1_5min = Electron_in_Aluminium_1_5min[:,0]
+
+print(LET_data_1_5min)
+
+# Create interpolation function
+interp_function_1_5plus = interp1d(LET_data_1_5plus, Ekin_data_1_5plus, kind='linear', fill_value="extrapolate")  
+interp_function_1_5min = interp1d(LET_data_1_5min, Ekin_data_1_5min, kind='linear', fill_value="extrapolate")
+
+# Function to predict kinetic energy from LET using interpolation
+def predict_Ekin_from_LET_1_5plus(LET_values):
+    return interp_function_1_5plus(LET_values)
+def predict_Ekin_from_LET_1_5min(LET_values):
+    return interp_function_1_5min(LET_values)
+
+# Generate LET range for predictions
+LET_range = np.linspace(0.35, 10, 500)
+LET_range_min = np.linspace(0.35, 4.5, 500)
+Ekin_predicted_1_5plus = predict_Ekin_from_LET_1_5plus(LET_range)
+Ekin_predicted_1_5min = predict_Ekin_from_LET_1_5min(LET_range_min)
+
+# Plot
+plt.scatter(Ekin_data_1_5plus, LET_data_1_5plus, color='red', label="Original Data", alpha=0.7)
+plt.scatter(Ekin_data_1_5min, LET_data_1_5min, color='red', label="Original Data", alpha=0.7)
+plt.plot(Ekin_predicted_1_5min, LET_range_min, label="Linear Interpolation", color='green', linewidth=2)
+plt.plot(Ekin_predicted_1_5plus, LET_range, label="Linear Interpolation", color='blue', linewidth=2)
+plt.xlabel("Kinetic Energy (E_kin) [keV]")
+plt.ylabel("Stopping Power (LET) [keV/µm]")
+plt.xscale('log')
+plt.legend()
+plt.show()
+
+
+
+
+def kinetic_energy_electrons(beta):   #(gamma-1)*m*c^2 
+    # This is to get kinetic energy once we have velocity
+    for i in range(len(beta)):
+        if beta[i] < 0.01:
+            print("ALARM", beta[i], i)     
+    m = 9.10938e-31 #in kg
+    c = 3e8 #in m/s
+    Ekin_electron = m*c**2*(1/np.sqrt(1-beta**2)-1)*6.241509e15 #in keV       #(gamma-1)*m*c**2 = total energy - rest energy = Ekin
+    #Ekin_proton = m*c**2*(1/np.sqrt(1-beta**2)-1)*6.241509e15 #in MeV
+    return Ekin_electron

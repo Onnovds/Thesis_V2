@@ -61,12 +61,12 @@ std::vector<RunData> loadRuns(const std::vector<float>& energies) {
 
         run.generatedParticles = 100000;
         run.generatorEnergy = energies[i];
-        run.generatedParticleType = "Gamma";
+        run.generatedParticleType = "Proton";
         run.worldVolume = "G4_Galactic";
         run.shielding = "Aluminium 5.0mm";
 
         // Construct the filename
-        run.title = std::string("100k") + run.generatedParticleType + energyStr + "MeV_Al_Slab_5mm_Vacuum_fStopandKill_afterSlab";
+        run.title = std::string("100k") + run.generatedParticleType + energyStr + "MeV_Al_Slab_5mm_Vacuum_fStopandKill_Omnidirectional";
         run.filename = run.title + ".root";
 
 
@@ -95,7 +95,7 @@ void plotLET(const std::vector<RunData>& runs) {
     std::string canvas_title = std::string("100k") + runs[0].generatedParticleType + "s_LET_Combined";
     TCanvas* canvas = new TCanvas(canvas_title.c_str(), "LET for Different Runs", 1400, 1000);
 
-    std::vector<int> colours = {kRed, kBlue, kGreen, kMagenta, kCyan, kOrange}; // For primary particles
+    std::vector<int> colours = {kRed, kBlue, kGreen, kMagenta+2, kCyan, kOrange, kYellow, kViolet}; // For primary particles
     std::vector<TGraph*> dummyMarkers; // Store to avoid garbage collection
 
     TLegend* legend = new TLegend(0.12, 0.6, 0.4, 0.9);
@@ -110,9 +110,9 @@ void plotLET(const std::vector<RunData>& runs) {
     entrySecondary->SetLineStyle(2);  // Dashed line
 
     // Define custom logarithmic bins
-    const int nBins = 70;
+    const int nBins = 100;
     const double xmin = 1e-3;
-    const double xmax = 300;
+    const double xmax = 10000;
     double binEdges[nBins + 1];
 
     double logMin = log(xmin);
@@ -322,7 +322,7 @@ void plotLET(const std::vector<RunData>& runs) {
 // Main function to load runs and plot histograms
 void Plots_multiple_LET() {
     // Define specific energies for the runs
-    std::vector<float> energies = {0.02, 0.05, 0.1, 0.5, 1.0};
+    std::vector<float> energies = {31.7, 32.5, 35, 40, 50, 70, 100, 200};
 
     auto runs = loadRuns(energies);
 

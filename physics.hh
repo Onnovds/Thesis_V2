@@ -6,6 +6,13 @@
 #include "G4OpticalPhysics.hh"
 #include "G4DecayPhysics.hh"
 #include "G4HadronElasticPhysics.hh"
+#include "G4HadronPhysicsQGSP_BIC_HP.hh"
+#include "G4StoppingPhysics.hh"
+#include "G4IonPhysics.hh"
+#include "G4NeutronTrackingCut.hh"
+#include "G4RadioactiveDecayPhysics.hh"
+#include "G4EmLivermorePhysics.hh"
+
 
 
 class MyPhysicsList : public G4VModularPhysicsList

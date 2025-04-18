@@ -39,7 +39,7 @@ struct RunData {
     std::string filename;
     float generatedParticles;
     float generatorEnergy;
-    int ParentID;
+    float ParentID;
     const char* generatedParticleType;
     const char* worldVolume;
     const char* shielding;

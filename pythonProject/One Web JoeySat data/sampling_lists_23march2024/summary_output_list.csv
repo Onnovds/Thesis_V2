@@ -1,0 +1,32 @@
+Quantity	[Unit]	Value
+date	[YY:MM:DD]	2024:03:23
+UTC start	[YY:MM:DD:hh:mm:ss]	2024-03-22 23:00:53.420000076
+UTC end	[YY:MM:DD:hh:mm:ss]	2024-03-23 21:47:46.420000076
+unix time start	[sec]	1711148453.42
+unix time end	[sec]	1711230466.42
+GPS orbit alt min	[km]	608.9
+GPS orbit alt max	[km]	625.4
+Elapsed Time	[DD:HH:MM:SS]	0 days 22:46:53
+Elapsed Time	[sec]	82013.0
+MPX live time	[sec]	7552.3
+num of MPX frames	[#]	327
+Particles: all	[#]	8602
+Particles: 1	[#]	1740
+Particles: 2	[#]	3221
+Particles: 3	[#]	3637
+Flux Mean all	[#/cm2/s]	1.008
+Flux Mean 1	[#/cm2/s]	0.558
+Flux Mean 2	[#/cm2/s]	0.338
+Flux Mean 3	[#/cm2/s]	0.338
+Dose_sum_all_live_t	[uGy]	4.66
+Dose_sum_1_live_t	[uGy]	3.73
+Dose_sum_2_live_t	[uGy]	0.829
+Dose_sum_3_live_t	[uGy]	0.101
+Dose_sum_all_elap_t	[uGy]	50.605
+Dose_sum_1_elap_t	[uGy]	40.505
+Dose_sum_2_elap_t	[uGy]	9.002
+Dose_sum_3_elap_t	[uGy]	1.097
+DR_mean_all	[uGy/h]	7.955
+DR_mean_1	[uGy/h]	11.227
+DR_mean_2	[uGy/h]	0.901
+DR_mean_3	[uGy/h]	0.077

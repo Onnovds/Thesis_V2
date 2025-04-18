@@ -5,7 +5,7 @@ import numpy as np
 
 def read_data(file_path, columns_to_keep, new_column_names):
     # Read the file
-    data = pd.read_csv(file_path, sep='\s+', header=0, names=new_column_names)
+    data = pd.read_csv(file_path, sep='\s+', header=3, names=new_column_names)
 
     # Keep only the specified columns
     data = data.iloc[:, columns_to_keep]
@@ -81,9 +81,9 @@ for i in range(nBins):
     x = x1
 
 if __name__ == "__main__":
-    file_path = "/home/onno/project_test/pythonProject/filtered_output.txt"  # Replace with your file path
-    columns_to_keep = [0, 1, 2, 3, 4, 5, 6]  # Adjust based on your file's structure (0-based index)
-    new_column_names = ["DetectorID", "EventID", "X", "Y", "E", "EpixMean", "LET"]  # Adjust based on your file's structure
+    file_path = "/home/onno/satellite_test/pythonProject/Electrons_in_Aluminium_10keV_1GeV_ESTAR.txt"  # Replace with your file path
+    columns_to_keep = [0, 1, 2, 3, 4, 5]  # Adjust based on your file's structure (0-based index)
+    new_column_names = ["KineticEnergy", "Collision_StoppingPower", "Radiative_StoppingPower", "Total_StoppingPower", "Radiation Yield", "DensityFactor"]  # Adjust based on your file's structure
 
     # Read the data
     data = read_data(file_path, columns_to_keep, new_column_names)
@@ -91,9 +91,21 @@ if __name__ == "__main__":
     #print("Columns in the data:", data.columns.tolist())
     data_array = np.array(data)
 
+    #print(data_array)
+
+    Electron_in_Aluminium = np.array(pd.read_csv(file_path, sep='\s+', header=2))
+    print(Electron_in_Aluminium)
+    #print(np.array(Electron_in_Aluminium))
+    Electron_in_Silicon = pd.read_csv("/home/onno/satellite_test/pythonProject/Electrons_in_Silicon_10keV_1GeV_ESTAR.txt", sep='\s+', header=2)
+    Electron_in_Silicon = np.array(Electron_in_Silicon)
+    #print(np.array(Electron_in_Silicon))
+
+    #print(np.array(Electron_in_Aluminium)[:, 3]*2.7/10)
+    #print(np.array(Electron_in_Silicon)[:, 0])
+    #print(np.array(Electron_in_Silicon)[:, 3]*2.33/10)
+
     # Plot
     #plot_hits_2d(data, "X", "Y", 256, 256)
     #plot_histogram(data, "LET", binEdges, title="Histogram of LET", xlabel='LET [keV/um]')
     #plot_E(data, "E", "EventID")
     # Plot LET over E
-

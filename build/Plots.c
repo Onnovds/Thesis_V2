@@ -1,5 +1,5 @@
 {
-    std::string title = "100kGamma1MeV_Al_Slab_5mm_Vacuum_fStopandKill_afterSlab"; // Define your title here
+    std::string title = "100kProton50MeV_Al_Slab_5mm_Vacuum_fStopandKill_afterSlab_V4"; // Define your title here
     std::string filename = title + ".root";      // Use the title in the filename
 
     // Top level variables for legend

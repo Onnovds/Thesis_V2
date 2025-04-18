@@ -62,12 +62,12 @@ std::vector<RunData> loadRuns(const std::vector<float>& energies) {
 
         run.generatedParticles = 100000;
         run.generatorEnergy = energies[i];
-        run.generatedParticleType = "Gamma";
+        run.generatedParticleType = "Proton";
         run.worldVolume = "G4_Galactic";
         run.shielding = "Aluminium 5.0mm";
 
         // Construct the filename
-        run.title = std::string("100k") + run.generatedParticleType + energyStr + "MeV_Al_Slab_5mm_Vacuum_fStopandKill_afterSlab";
+        run.title = std::string("100k") + run.generatedParticleType + energyStr + "MeV_Al_Slab_5mm_Vacuum_fStopandKill_Omnidirectional";
         run.filename = run.title + ".root";
 
 
@@ -98,7 +98,7 @@ void plotKineticEnergy2(const std::vector<RunData>& runs) {
     // Ensure that ROOT doesn't overwrite the previous canvas
     TCanvas* canvas = new TCanvas(canvas_title.c_str(), "Kinetic Energy for Different Runs", 1400, 1000);
     
-    std::vector<int> colours = {kRed, kBlue, kGreen, kMagenta, kCyan, kOrange};
+    std::vector<int> colours = {kRed, kBlue, kGreen, kMagenta+2, kCyan, kOrange, kYellow, kViolet};
     std::vector<TGraph*> dummyMarkers; // Store to avoid garbage collection
     TLegend* legend = new TLegend(0.132, 0.6, 0.5, 0.9);
     // Global legend entry for line styles 
@@ -233,7 +233,7 @@ void plotKineticEnergy2(const std::vector<RunData>& runs) {
 // Main function to load runs and plot histograms
 void Plots_multiple_energies_primariesVSsecondaries() {
     // Define specific energies for the runs
-    std::vector<float> energies = {0.02, 0.05, 0.1, 0.5, 1.0};
+    std::vector<float> energies = {31.7, 32.5, 35, 40, 50, 100, 200};
 
     auto runs = loadRuns(energies);
 

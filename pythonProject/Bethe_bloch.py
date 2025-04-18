@@ -21,28 +21,67 @@ SRIM_LET_data_Air = SRIM_data_Air[78:144, 1]  #from 1MeV to 300MeV
 SRIM_Ekin_data_Air_MeV = SRIM_data_Air[78:144, 0]/1e3  #from 1MeV to 300MeV in keV to MeV (so 1000 to 300000)
 
 
-beta_solution = bb.beta_from_LET_list(SRIM_LET_data_Air, "Air")
-Ekin = bb.kinetic_energy(beta_solution)
-error = bb.percentage_error(SRIM_Ekin_data_Air_MeV, Ekin/1e3)
-print("The error percentage = ", error)
-print("The calculated kinetic energy = ", Ekin/1e3)
-print("The calculated beta = ", beta_solution)
+
+beta_solution_aluminium = bb.beta_from_LET_list(SRIM_LET_data_Aluminium, "Aluminium")
+Ekin_aluminium = bb.kinetic_energy(beta_solution_aluminium)
+print(Ekin_aluminium)
+error = bb.percentage_error(SRIM_Ekin_data_Aluminium_MeV, Ekin_aluminium/1e3)
+#print("The error percentage = ", error)
+#print("The calculated kinetic energy = ", Ekin_aluminium/1e3)
+#print("The calculated beta = ", beta_solution_aluminium)
 
 
-plt.plot(SRIM_Ekin_data_Air_MeV, SRIM_LET_data_Air, label="SRIM data")
-plt.plot(Ekin/1e3, SRIM_LET_data_Air, 'ro', label="Calculated data")
-#plt.plot(Ekin2, SRIM_LET_data_Aluminium, 'yo', label="1/2mv^2")
-plt.xlabel("Kinetic Energy (MeV)")
-plt.ylabel("LET (keV/um)")
-plt.title("LET over kinetic energy Air")
+plt.figure(figsize=(8,8))
+plt.plot(SRIM_Ekin_data_Aluminium_MeV, SRIM_LET_data_Aluminium, label="SRIM data")
+plt.plot(Ekin_aluminium/1e3, SRIM_LET_data_Aluminium, 'ro', label="Calculated data w/ corrections")
+#plt.plot(Ekin2, SRIM_LET_data_Aluminium, 'yo', label="1/2mv^2")o
+plt.xlabel("Kinetic Energy (MeV)", fontsize=18)
+plt.ylabel("LET (keV/um)", fontsize=18)
+plt.title("LET over kinetic energy for protons in Aluminium", fontsize=20)
 plt.yscale('log')
 plt.xscale('log')
-plt.legend()
+plt.xticks(fontsize=18)
+plt.yticks(fontsize=18)
+plt.legend(fontsize=18)
+
+
+
+beta_solution_air = bb.beta_from_LET_list(SRIM_LET_data_Air, "Air")
+Ekin_air = bb.kinetic_energy(beta_solution_air)
+
+print("The calculated beta for air = ", beta_solution_air)
+
+plt.figure(figsize=(8,8))
+plt.plot(SRIM_Ekin_data_Air_MeV, SRIM_LET_data_Air, label="SRIM data")
+plt.plot(Ekin_air/1e3, SRIM_LET_data_Air, 'ro', label="Calculated data w/ corrections")
+#plt.plot(Ekin2, SRIM_LET_data_Aluminium, 'yo', label="1/2mv^2")
+plt.xlabel("Kinetic Energy (MeV)", fontsize=18)
+plt.ylabel("LET (keV/um)", fontsize=18)
+plt.title("LET over kinetic energy for protons in Air", fontsize=20)
+plt.yscale('log')
+plt.xscale('log')
+plt.xticks(fontsize=18)
+plt.yticks(fontsize=18)
+plt.legend(fontsize=18)
+
+
+beta_solution_silicon = bb.beta_from_LET_list(SRIM_LET_data_Silicon, "Silicon")
+Ekin_silicon = bb.kinetic_energy(beta_solution_silicon)
+
+print("The calculated beta for silicon = ", beta_solution_silicon)
+
+plt.figure(figsize=(8,8))
+plt.plot(SRIM_Ekin_data_Silicon_MeV, SRIM_LET_data_Silicon, label="SRIM data")
+plt.plot(Ekin_silicon/1e3, SRIM_LET_data_Silicon, 'ro', label="Calculated data w/ corrections")
+plt.xlabel("Kinetic Energy (MeV)", fontsize=18)
+plt.ylabel("LET (keV/um)", fontsize=18)
+plt.title("LET over kinetic energy for protons in Silicon", fontsize=20)
+plt.yscale('log')
+plt.xscale('log')
+plt.xticks(fontsize=18)
+plt.yticks(fontsize=18)
+plt.legend(fontsize=18)
 plt.show()
-
-
-
-
 
 
 

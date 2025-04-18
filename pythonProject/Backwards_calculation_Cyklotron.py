@@ -5,8 +5,15 @@ import matplotlib.pyplot as plt
 from SRIM_data import SRIM_data_Aluminium, SRIM_data_Silicon
 import time
 
+LET_at_Detector_geant4 = 62.22
+beta = bb.beta_from_LET_value(LET_at_Detector_geant4, "Silicon")
+Ekin_detector = bb.kinetic_energy2(beta)
+print(f"Kinetic energy at detector (Geant4): {Ekin_detector:.2f} keV")
+Ekin_values, LET_values, distance_values = bb.calculate_kinetic_energy_backward(Ekin_detector, 'Aluminium', 5e3, 1, 5e3)
+print(f"Kinetic energy at generator (Geant4): {Ekin_values[-1]:.2f} keV")
+
 # Load the data
-data = pd.read_csv('Cyklotron_proton_20230324.txt', sep='\t')
+data = pd.read_csv('/home/onno/satellite_test/pythonProject/Cyklotron_proton_20230324.txt', sep='\t')
 data = data.apply(pd.to_numeric, errors='coerce')  # Convert all columns to numeric
 LET_list_test = data['LET'].to_numpy()[:]  # Convert to NumPy array
 
@@ -60,6 +67,8 @@ import pandas as pd
 
 df = pd.DataFrame({"Ekin_final (keV)": Ekin_final_results})
 df.to_csv("Ekin_calculated_Cyklotron_Cfactor1.0_.csv", index=False)
+
+
 
 
 

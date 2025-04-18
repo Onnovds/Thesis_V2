@@ -78,7 +78,7 @@ G4VPhysicalVolume *MyDetectorConstruction::Construct()
 	G4Box *solidSlab = new G4Box("solidSlab", 0.25*m, 0.25*m, slabWidth/2); //Half-thickness should be given 
 	G4LogicalVolume *logicSlab = new G4LogicalVolume(solidSlab, Aluminium, "logicSlab");
 	G4VPhysicalVolume *physSlab = new G4PVPlacement(0, G4ThreeVector(0., 0., 0.+slabWidth/2), logicSlab, "physSlab", logicWorld, false, 0, true);   //Middle of volume
-	
+
 
 	//--------------------------------------------
 
@@ -119,7 +119,7 @@ G4VPhysicalVolume *MyDetectorConstruction::Construct()
 			//G4VPhysicalVolume *physDetector = new G4PVPlacement(0, G4ThreeVector(posX, posY, -0.858*m), logicDetector, "physDetector", logicWorld, false, i*256+j, true);  //14.2cm from beam generator which is at -1.0m = -0.858*m --> Slab 5 is 18.2cm away = -0.818*m   --> Slab 4 but close to detector 0.9995-0.142= 0.8575
 			
 			//After slab
-			G4VPhysicalVolume *physDetector = new G4PVPlacement(0, G4ThreeVector(posX, posY, 0.1*mm+slabWidth+pixelDepth/2), logicDetector, "physDetector", logicWorld, false, i*256+j, true); //14.2cm from beam generator which is at -1.0m = -0.858*m + 2.04mm of detector + 0.5mm/2 (detectordepth) 
+			G4VPhysicalVolume *physDetector = new G4PVPlacement(0, G4ThreeVector(posX, posY, 0.01*mm+slabWidth+pixelDepth/2), logicDetector, "physDetector", logicWorld, false, i*256+j, true); //14.2cm from beam generator which is at -1.0m = -0.858*m + 2.04mm of detector + 0.5mm/2 (detectordepth) 
 		}
 		
 	}
