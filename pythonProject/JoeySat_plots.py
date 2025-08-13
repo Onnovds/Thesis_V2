@@ -65,4 +65,42 @@ for col in range(2):  # 0 = left column, 1 = right column
     axes[-1, col].grid(True, which='both', linestyle='--', linewidth=0.5)
 
 plt.tight_layout()
+#plt.show()
+
+# --- Histogram of Deposited Energy for Class 1 ---
+
+# Combine the Edep data from both days for "class1"
+# The energy data is in the 6th column (index 5)
+edep_class1_23 = arrays_23['class1'][:, 5]
+edep_class1_24 = arrays_24['class1'][:, 5]
+combined_edep_class1 = np.concatenate((edep_class1_23, edep_class1_24))
+
+# Create a new figure for the histogram
+plt.figure(figsize=(10, 6))
+
+log_bins = np.logspace(np.log10(1e0), np.log10(2.5e4), 100)
+
+# Plot the histogram
+plt.hist(combined_edep_class1, bins=log_bins, color=color_map['class1'], alpha=0.75, label='JoeySat TPX Data (Class 1)')
+
+# Add vertical line for the max simulated Edep
+plt.axvline(x=2220, color='red', linestyle='--', linewidth=2, label='"Max." Edep in Simulation (2220 keV)')
+
+# Add titles and labels for clarity
+plt.title('Deposited Energy Distribution for Protons + Ions (Class 1)')
+plt.xlabel('Deposited Energy (Edep) [keV]')
+plt.ylabel('Counts')
+
+# Use a logarithmic scale for the y-axis to better see the distribution
+plt.yscale('log')
+plt.xscale('log')
+
+# Add a grid and legend
+plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+plt.legend()
+
+# --- End of Histogram Code ---
+
+# Display all plots
+plt.tight_layout()
 plt.show()

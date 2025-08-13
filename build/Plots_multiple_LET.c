@@ -67,7 +67,7 @@ std::vector<RunData> loadRuns(const std::vector<float>& energies) {
 
         // Construct the filename
         run.title = std::string("100k") + run.generatedParticleType + energyStr + "MeV_Al_Slab_5mm_Vacuum_fStopandKill_Omnidirectional";
-        run.filename = run.title + ".root";
+        run.filename = std::string("/home/onno/satellite_test/build/") + run.generatedParticleType + "s/" + run.title + ".root";
 
 
         // Open the ROOT file
@@ -219,110 +219,10 @@ void plotLET(const std::vector<RunData>& runs) {
 }
 
 
-/*
-void plotLET(const std::vector<RunData>& runs) {
-    gStyle->SetOptStat(0); // Disable all statistics
-    std::string canvas_title = std::string("100k") + runs[0].generatedParticleType + "s_LET_Combined";
-    TCanvas* canvas = new TCanvas(canvas_title.c_str(), "LET for Different Runs", 1200, 800);
-    std::vector<int> colours = {kRed, kBlue, kGreen, kMagenta, kCyan, kOrange};
-    TLegend* legend = new TLegend(0.15, 0.7, 0.3, 0.9);
-
-    // Define custom logarithmic bins
-    const int nBins = 70;      // Number of bins
-    const double xmin = 1e-3;  // Minimum range
-    const double xmax = 300;   // Maximum range
-    // const double xmax = runs[runs.size()-1].generatorEnergy *1.3;   // Maximum range    ---> AUTOMISE THIS FOR LET
-    double binEdges[nBins + 1];
-
-
-    // Calculate logarithmic bin edges
-    double logMin = log(xmin);
-    double logMax = log(xmax);
-    double delta = (logMax - logMin) / nBins;
-
-    for (int j = 0; j <= nBins; ++j) {
-        binEdges[j] = exp(logMin + j * delta);
-        // std::cout << binEdges[j] << std::endl; // Print bin edges for checking
-    }
-    
-    
-    for (size_t i = 0; i < runs.size(); ++i) {
-        if (!runs[i].tree) {
-            std::cerr << "Tree not available for run: " << runs[i].generatorEnergy << " MeV." << std::endl;
-            continue;
-        }
-
-    // Unique variable for KineticEnergy
-        Double_t LET;
-
-        // Set branch address locally
-        runs[i].tree->SetBranchAddress("LET", &LET);
-        
-
-        // Create histogram
-        std::string histName = "hist_" + std::to_string(i);
-        std::string histTitle = std::string("LET of ") + runs[0].generatedParticleType + "s at detector";
-        TH1D* hist = new TH1D(histName.c_str(), histTitle.c_str(), nBins, binEdges);
-        
-        // Fill histogram with data
-        for (Long64_t j = 0; j < runs[i].nentries; ++j) {
-            runs[i].tree->GetEntry(j);
-            if (LET > 1e-3) {  // Ensure valid kinetic energy values
-                hist->Fill(LET);
-                //std::cout << Ek << std::endl;
-            }
-        }
-
-        // Style and draw histogram
-        hist->SetLineColor(colours[i % colours.size()]);
-        hist->SetLineWidth(2);
-        hist->SetMaximum(200000); // Set Y-axis max to 2000
-        hist->GetXaxis()->SetTitle("LET [keV/um]");
-        hist->GetYaxis()->SetTitle("Counts [#]");
-        hist->GetXaxis()->SetLabelOffset(-0.005); // Increase offset for more space
-        if (i == 0) {
-            hist->Draw();
-            legend->AddEntry((TObject*)0, "Energy at Generator", ""); // Add custom entry
-        } else {
-            hist->Draw("SAME");
-        }
-        std::ostringstream LegendIdentifier;
-        LegendIdentifier << std::fixed << std::setprecision(2) << runs[i].generatorEnergy;  // Fixed with 1 or 2 decimal places
-        legend->AddEntry(hist, (LegendIdentifier.str() + " MeV").c_str(), "l");
-    }
-    
-    legend->Draw();
-
-    // Create a TPaveText box to match the legend style
-    TPaveText *textBox = new TPaveText(0.3, 0.7, 0.6, 0.9, "NDC"); // Normalized coordinates
-    textBox->SetFillColor(0);       // White background
-    textBox->SetLineColor(kBlack);  // Black border
-    textBox->SetLineWidth(1);       // Thin black border
-    textBox->SetTextFont(42);       // Font type to match ROOT legend
-    textBox->SetTextSize(0.02);     // Font size
-    textBox->SetTextAlign(12);      // Align text to the left
-    textBox->SetShadowColor(0);     // No shadow
-
-
-    // Add text lines
-    textBox->AddText("Generated particles = 100k");
-    textBox->AddText("Generated particle type = Proton");
-    textBox->AddText("World material = G4_Galactic");
-    textBox->AddText("Shielding = Aluminium 5.0mm");
-    textBox->AddText(("Binning method = Logarithmic spacing (" + std::to_string(nBins) + "bins)").c_str());
-    textBox->Draw();
-
-    canvas->SetTitle("LET Distribution for Different Runs");
-    canvas->SetLogx();  // Optional
-    canvas->SetLogy();  // Optional
-    canvas->SetGrid();
-    canvas->Update();
-}
-*/
 // Main function to load runs and plot histograms
 void Plots_multiple_LET() {
     // Define specific energies for the runs
-    std::vector<float> energies = {31.7, 32.5, 35, 40, 50, 70, 100, 200};
+    std::vector<float> energies = {31.7, 32.5, 35, 40, 50, 100, 200};
 
     auto runs = loadRuns(energies);
 

@@ -4,8 +4,8 @@
 
     // Top level variables for legend
     float GeneratedParticles = 100000;
-    float GeneratorEnergy = 1;
-    const char* GeneratedParticleType = "Gamma";
+    float GeneratorEnergy = 50;
+    const char* GeneratedParticleType = "proton";
     const char* WorldVolume = "G4_Galactic";
     const char* Shielding = "Aluminium 5.0mm";
 

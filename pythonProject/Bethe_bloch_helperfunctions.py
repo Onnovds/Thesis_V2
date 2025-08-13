@@ -99,7 +99,7 @@ def beta_from_LET_list(LET_data, material): #in keV/um
             continue
         ''' 
 
-        #Correction_factor = 1.6    #Correction factor for LET values but I don't know for what anymore
+        #Correction_factor = 1.6    #Correction factor for LET values --> I don't know for what anymore
         dEdx = round(LET_data[i]*10, 5) #  keV/um to MeV/cm
         func = lambda beta : -dEdx + fit_factor_air*K*Z/A*rho*z**2/beta**2*(0.5*np.log(fit_factor*2*me_c2**2*beta**2*relativistic_factor(beta)**2*max_Ekin_proton(m_e, m_p, beta)/I**2) - beta**2)
         #func = lambda beta : dEdx + K*Z/A*rho*z**2/beta**2*(np.log(2*m_e*beta**2*(relativistic_factor(beta))**2/I) - beta**2)
@@ -390,6 +390,7 @@ LET_range_min = np.linspace(0.35, 4.5, 500)
 Ekin_predicted_1_5plus = predict_Ekin_from_LET_1_5plus(LET_range)
 Ekin_predicted_1_5min = predict_Ekin_from_LET_1_5min(LET_range_min)
 
+'''
 # Plot
 plt.scatter(Ekin_data_1_5plus, LET_data_1_5plus, color='red', label="Original Data", alpha=0.7)
 plt.scatter(Ekin_data_1_5min, LET_data_1_5min, color='red', label="Original Data", alpha=0.7)
@@ -401,7 +402,7 @@ plt.xscale('log')
 plt.legend()
 plt.show()
 
-
+'''
 
 
 def kinetic_energy_electrons(beta):   #(gamma-1)*m*c^2 

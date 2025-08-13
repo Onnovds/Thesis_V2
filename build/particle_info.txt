@@ -1,2 +1,2 @@
-Particle: proton
-Energy: 200 MeV (mean)
+Particle: gamma
+Energy: 0.5 MeV (mean)

@@ -68,7 +68,7 @@ std::vector<RunData> loadRuns(const std::vector<float>& energies) {
 
         // Construct the filename
         run.title = std::string("100k") + run.generatedParticleType + energyStr + "MeV_Al_Slab_5mm_Vacuum_fStopandKill_Omnidirectional";
-        run.filename = run.title + ".root";
+        run.filename = std::string("/home/onno/satellite_test/build/") + run.generatedParticleType + "s/" + run.title + ".root";
 
 
         // Open the ROOT file

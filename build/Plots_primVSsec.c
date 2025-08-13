@@ -1,12 +1,35 @@
-{
-    std::string title = "500kProton50MeV_Al_Slab_5mm_Vacuum_fStopandKill_Omnidirectional"; // Define your title here
-    std::string filename = title + ".root";      // Use the title in the filename
+// Helper function to replace '.' with '_' in a string
+std::string replaceDotWithUnderscore(const std::string& input) {
+    std::string output = input;
+    std::replace(output.begin(), output.end(), '.', '_');
+    return output;
+}
+// Helper function to format floats without unnecessary trailing zeroes
+std::string formatFloat(float value) {
+    std::ostringstream stream;
+    stream << std::fixed << std::setprecision(2) << value;
+    std::string result = stream.str();
+    // Remove trailing ".0" for integers
+    if (result.find('.') != std::string::npos) {
+        result.erase(result.find_last_not_of('0') + 1, std::string::npos);
+        if (result.back() == '.') {
+            result.pop_back();
+        }        
+    }
+    return result;
+}
 
-    float GeneratedParticles = 10000;
+{   float GeneratedParticles = 100000;
     float GeneratorEnergy = 100;
     const char* GeneratedParticleType = "Proton";
-    const char* WorldVolume = "G4_Air";
+    const char* WorldVolume = "G4_Galactic";
     const char* Shielding = "-";
+
+    std::string identifier = std::string("100k") + GeneratedParticleType;
+    std::string energyStr = replaceDotWithUnderscore(formatFloat(GeneratorEnergy));
+    std::string title = identifier + energyStr + "MeV_Al_Slab_5mm_Vacuum_fStopandKill_Omnidirectional";  // _Omnidirectional   or  _afterSlab_V4  or _afterSlab
+    std::string filename = std::string("/home/onno/satellite_test/build/") + GeneratedParticleType + "s/" + title + ".root";   // Use the title in the filename
+
 
     TFile *file = TFile::Open(filename.c_str());
     TTree *tree = (TTree*)file->Get("DetectorData");
@@ -47,8 +70,8 @@
 
     // Loop to find min and maxa values
     Long64_t nentries = tree->GetEntries();
-    for (Long64_t i = 0; i < nentries; i++) {
-        tree->GetEntry(i);
+    for (Long64_t j = 0; j < nentries; j++) {
+        tree->GetEntry(j);
         //Ek *= 1000; // Convert MeV to keV
         //Edep *= 1000; // Convert MeV to keV
         if (Ek < minEk) minEk = Ek;
@@ -66,14 +89,15 @@
         Double_t logMax = log10(max);
         Double_t binWidth = (logMax - logMin) / numBins;
 
-        for (int i = 0; i <= numBins; ++i) {
-            binEdges.push_back(pow(10, logMin + i * binWidth));
+        for (int z = 0; z <= numBins; ++z) {
+            binEdges.push_back(pow(10, logMin + z * binWidth));
         }
         return binEdges;
     };
 
     // Calculate bin edges
-    std::vector<Double_t> binEdgesEk = calculateBinEdges(minEk, maxEk, 100);
+    int binsEkin = 70; // Number of bins for kinetic energy
+    std::vector<Double_t> binEdgesEk = calculateBinEdges(minEk, maxEk, binsEkin);
     std::vector<Double_t> binEdgesEdep = calculateBinEdges(1, 4e3, 110);   //Self chosen because it compares better with TPX data
     std::vector<Double_t> binEdgesLET = calculateBinEdges(minLET, maxLET, 100);
 
@@ -113,8 +137,8 @@
     TH2F *hSecondaryOthers = new TH2F("hSecondaryOthers", "Hits of secondary others;X (mm); Y(mm)", bins, min, max, bins, min, max);
 
     // Loop over all entries in the tree to fill the histograms
-    for (Long64_t i = 0; i < nentries; i++) {
-        tree->GetEntry(i);
+    for (Long64_t l = 0; l < nentries; l++) {
+        tree->GetEntry(l);
         
         h1_total->Fill(Ek);
         h2_total->Fill(Edep*1000); // *1000 to get in keV 
@@ -177,12 +201,14 @@
     gPad->SetLeftMargin(0.15);
     gPad->SetRightMargin(0.08);
     h1_primary->SetTitle("Kinetic Energy Spectrum at Detector; Kinetic Energy [MeV]; Count [#]");
-    h1_primary->Draw();  // Draw primaries first
-    h1_secondary->Draw("SAME");  // Overlay secondaries
+    h1_secondary->Draw();  // Draw primaries first
+    h1_primary->Draw("SAME");  // Overlay secondaries
 
     double mean_Ekin_all = h1_total->GetMean();
     double mean_Ekin_primary = h1_primary->GetMean();
     double mean_Ekin_secondary = h1_secondary->GetMean();
+    int maxBin_Ekin = h1_total->GetMaximumBin();
+    double peakValue_Ekin = h1_total->GetXaxis()->GetBinCenter(maxBin_Ekin);
 
     // Create legend
     TLegend *legend = new TLegend(0.18, 0.45, 0.8, 0.9);
@@ -195,9 +221,11 @@
     legend->AddEntry((TObject*)0, Form("Energy @ generator = %.1f MeV", GeneratorEnergy), "");
     legend->AddEntry((TObject*)0, Form("Simulation Environment = %s", WorldVolume), "");
     legend->AddEntry((TObject*)0, Form("Shielding? = %s", Shielding), "");
-    legend->AddEntry((TObject*)0, Form("Mean energy @ detector = %.2f MeV", mean_Ekin_all), "");    
+    legend->AddEntry((TObject*)0, Form("Mean energy @ detector = %.2f MeV", mean_Ekin_all), "");   
+    legend->AddEntry((TObject*)0, Form("Modal energy @ detector = %.2f MeV", peakValue_Ekin), "");
     legend->AddEntry((TObject*)0, Form("Mean energy primaries @ detector = %.2f MeV", mean_Ekin_primary), ""); // "l" is for line style
     legend->AddEntry((TObject*)0, Form("Mean energy secondaries @ detector = %.3f MeV", mean_Ekin_secondary), "");
+    legend->AddEntry((TObject*)0, Form("Bins = %.0d", binsEkin), "");
     legend->AddEntry((TObject*)0, Form("Hits = %.2lld ", nentries), "");
     legend->Draw();
 
@@ -237,6 +265,8 @@
     pad1->cd();
     gPad->SetLogx();
     h2_total->Draw();
+    h2_primary->Draw("SAME");
+    h2_secondary->Draw("SAME");
     h2_total->GetXaxis()->SetLabelSize(0); // Remove x-axis labels
     h2_total->SetTitle("");
     TPaveText *titleText = new TPaveText(0.15, 0.92, 0.85, 0.98, "NDC");
@@ -250,17 +280,17 @@
     TLegend *legend_Edep = new TLegend(0.6, 0.6, 0.95, 0.9);
     legend_Edep->SetTextSize(0.06);
     legend_Edep->SetMargin(0.08);
-    //legend_Edep->AddEntry(h2_total, "All Particles", "l");
-    //legend_Edep->AddEntry(h2_primary, "Primary Particles", "l");
-    //legend_Edep->AddEntry(h2_secondary, "Secondary Particles", "l");
+    legend_Edep->AddEntry(h2_total, "All Particles", "l");
+    legend_Edep->AddEntry(h2_primary, "Primary Particles", "l");
+    legend_Edep->AddEntry(h2_secondary, "Secondary Particles", "l");
     //legend_Edep->AddEntry((TObject*)0, Form("Generated particles = %.0f", GeneratedParticles), "");
     //legend_Edep->AddEntry((TObject*)0, Form("Generated particle type = %s", GeneratedParticleType), "");
-    //legend_Edep->AddEntry((TObject*)0, Form("Energy @ generator = %.1f MeV", GeneratorEnergy), "");
+    legend_Edep->AddEntry((TObject*)0, Form("Energy @ generator = %.1f MeV", GeneratorEnergy), "");
     //legend_Edep->AddEntry((TObject*)0, Form("Simulation Environment = %s", WorldVolume), "");
     //legend_Edep->AddEntry((TObject*)0, Form("Shielding? = %s", Shielding), "");
     legend_Edep->AddEntry((TObject*)0, Form("Mean Energy @ detector = %.2f keV", mean_Edep_all), "");    
-    //legend_Edep->AddEntry((TObject*)0, Form("Mean primaries @ detector = %.2f keV", mean_Edep_primary), ""); // "l" is for line style
-    //legend_Edep->AddEntry((TObject*)0, Form("Mean secondaries @ detector = %.2f keV", mean_Edep_secondary), "");
+    legend_Edep->AddEntry((TObject*)0, Form("Mean primaries @ detector = %.2f keV", mean_Edep_primary), ""); // "l" is for line style
+    legend_Edep->AddEntry((TObject*)0, Form("Mean secondaries @ detector = %.2f keV", mean_Edep_secondary), "");
     legend_Edep->AddEntry((TObject*)0, Form("Hits in detector = %.2lld ", nentries), "");
     legend_Edep->AddEntry((TObject*)0, Form("x(y_max) = %.2f keV", peakValue), "");
     legend_Edep->AddEntry((TObject*)0, "Logarithmic binning: 110 bins", "");
@@ -273,6 +303,8 @@
     gPad->SetLogy();
     h2_total->SetTitle(""); // Remove bottom plot title
     h2_total->Draw();
+    h2_primary->Draw("SAME");
+    h2_secondary->Draw("SAME");
     h2_total->GetXaxis()->SetTitle("Deposited Energy [keV]");
     h2_total->GetXaxis()->SetTitleSize(0.07);   // Increase X label size
     h2_total->GetXaxis()->SetLabelSize(0.06);   // Increase X tick label size
@@ -282,7 +314,7 @@
 
     c2->Update();
 
-
+/*
 
     // Create canvas for LET
     std::string title_LET = title + "_LET";
@@ -421,6 +453,6 @@
 
 
 
-
+*/
 
 }

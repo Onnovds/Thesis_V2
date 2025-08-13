@@ -173,17 +173,18 @@ plt.ylabel("Kinetic Energy (keV)")
 plt.title("Backwards calculation of kinetic energy of Cyklotron 60deg with no slab")
 '''
 
-LET_HE_Krakow = 5.26 #From HE_Krakow experiment 35MeV+2m air = 31MeV detector (DPE_CP_1_1_0_dec2023_251_1s)   in keV/um
+'''
+LET_HE_Krakow = 3.465 #From ... experiment 35MeV+2m air = 31MeV detector (DPE_CP_1_1_0_dec2023_251_1s)   in keV/um
 HE_Krakow_correction_factor = 1.0
 beta_solution_HE_Krakow_no_slab = bb.beta_from_LET_value(LET_HE_Krakow*HE_Krakow_correction_factor, "Silicon") # beta from LET
-Ekin_HE_Krakow_no_slab = bb.kinetic_energy(beta_solution_HE_Krakow_no_slab) # kinetic energy at detector
+Ekin_HE_Krakow_no_slab = bb.kinetic_energy2(beta_solution_HE_Krakow_no_slab) # kinetic energy at detector
 
 
 Ekin_values_HE_Krakow_no_slab, LET_values_HE_Krakow_no_slab, distance_values_HE_Krakow_no_slab = bb.calculate_kinetic_energy_backward(Ekin_HE_Krakow_no_slab, "Silicon", 1, dx=1, distance_from_generator=2e6+1)
-print("Kinetic energy of HE_Krakow 60deg at face detector with no slab =", Ekin_values_HE_Krakow_no_slab[-1]/1e3, "MeV")
+print("Kinetic energy of HE_Krakow at face detector with no slab =", Ekin_values_HE_Krakow_no_slab[-1]/1e3, "MeV")
 
-Ekin_air_2m_HE_Krakow_no_slab, LET_air_2m_HE_Krakow_no_slab, distance_air_2m_HE_Krakow_no_slab =  bb.calculate_kinetic_energy_backward(Ekin_values_HE_Krakow_no_slab[-1], "Air", 2e6, 10, distance_values_HE_Krakow_no_slab[-1]*1e4) #2m
-print("Kinetic energy of HE_Krakow 60deg at generator with no slab = ", Ekin_air_2m_HE_Krakow_no_slab[-1]/1e3, "MeV")
+Ekin_air_2m_HE_Krakow_no_slab, LET_air_2m_HE_Krakow_no_slab, distance_air_2m_HE_Krakow_no_slab =  bb.calculate_kinetic_energy_backward(Ekin_values_HE_Krakow_no_slab[-1], "Air", 2e6, 10, distance_values_HE_Krakow_no_slab[-1]*1e4) #2m in steps of 10um
+print("Kinetic energy of HE_Krakow at generator with no slab = ", Ekin_air_2m_HE_Krakow_no_slab[-1]/1e3, "MeV")
 
 plt.figure(3)
 plt.plot(distance_values_HE_Krakow_no_slab, Ekin_values_HE_Krakow_no_slab, label='Silicon 1um')
@@ -192,6 +193,22 @@ plt.legend()
 plt.xlabel("Distance from generator (cm)")
 plt.ylabel("Kinetic Energy (keV)")
 plt.title("Backwards calculation of kinetic energy of Cyklotron 60deg with no slab")
+'''
+
+LET_omnidirectional = 0.94 #From Geant4 satellite omnidirectional runs   in keV/um
+omnidirectional_correction_factor = 0.95
+beta_solution_omnidirectional_no_slab = bb.beta_from_LET_value(LET_omnidirectional*omnidirectional_correction_factor, "Silicon") # beta from LET
+Ekin_omnidirectional_no_slab = bb.kinetic_energy2(beta_solution_omnidirectional_no_slab) # kinetic energy at detector
+t_shielding = 5e3 #5mm Aluminium slab in um
+omnidirectional_correction = 1.5 #Correction factor for omnidirectional runs as particles travel through shielding longer on average
+t_shielding_corrected = t_shielding * omnidirectional_correction #Convert to cm for the calculation
+
+
+Ekin_values_omnidirectional_no_slab, LET_values_omnidirectional_no_slab, distance_values_omnidirectional_no_slab = bb.calculate_kinetic_energy_backward(Ekin_omnidirectional_no_slab, "Silicon", 1, dx=1, distance_from_generator=t_shielding_corrected+1)
+print("Kinetic energy of omnidirectional at face detector with no slab =", Ekin_values_omnidirectional_no_slab[-1]/1e3, "MeV")
+
+Ekin_air_2m_omnidirectional_no_slab, LET_air_2m_omnidirectional_no_slab, distance_air_2m_omnidirectional_no_slab =  bb.calculate_kinetic_energy_backward(Ekin_values_omnidirectional_no_slab[-1], "Aluminium", t_shielding_corrected, 1, distance_values_omnidirectional_no_slab[-1]*1e4) #2m in steps of 10um
+print("Kinetic energy of omnidirectional at generator with no slab = ", Ekin_air_2m_omnidirectional_no_slab[-1]/1e3, "MeV")
 
 plt.show()
 

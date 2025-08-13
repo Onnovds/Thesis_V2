@@ -3,17 +3,84 @@ import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 from numpy.polynomial.polynomial import Polynomial
 
-# Data protons
-E_gen_protons = np.array([31.7, 32.5, 35, 40, 50, 100, 200])  # in MeV
-Total_hits_detector = np.array([178, 75800, 99118, 100014, 100011, 100004, 100005])
-Total_hits_generator = np.array([100000, 100000, 100000, 100000, 100000, 100000, 100000])
-Total_secondaries_protons = np.array([0, 11, 113, 15, 11, 4, 5])
+# Data protons Omnidirectional source
+E_gen_protons = np.array([31.7, 32.5, 35, 40, 50, 100, 200])  # Generator energy of protons in MeV
+Total_protons = np.array([1, 1047, 12975, 30902, 45119, 45875, 46158]) #Total protons (both primaries and secondaries) in detector after shielding
+Total_hits_detector = np.array([1565, 2680, 14937, 33373, 47993, 48412, 48664]) #Total hits in detector after shielding
+Total_hits_noshield = np.array([46258, 46271, 46267, 46247, 46233, 46276, 46227])  #Total hits in detector with no shielding (100k generated)
+Total_secondaries_noshield = np.array([19, 19, 19, 13, 13, 21, 19]) #Total secondaries in detector with no shielding
+Total_secondaries_protons = np.array([1564, 1633, 1967, 2497, 2963, 2920, 3165]) #Total secondaries in detector with shielding
+Total_hits_detector_V3 = np.array([178, 75800, 99118, 100014, 100011, 100004, 100005])
+Total_hits_generator_V3 = np.array([100000, 100000, 100000, 100000, 100000, 100000, 100000])
+Total_secondaries_protons_V3 = np.array([0, 11, 113, 15, 11, 4, 5])
 Hits_primaries = Total_hits_detector-Total_secondaries_protons
-Transmission_factor = Total_hits_detector / Total_hits_generator
-Reduction_factor = 1 - Transmission_factor
-Secondary_factor_protons = Total_secondaries_protons / Total_hits_generator
-print(1-Hits_primaries/Total_hits_generator)
+Hits_primaries_noshield = Total_hits_noshield - Total_secondaries_noshield
+Transmission_factor_total = Total_hits_detector / Total_hits_noshield       # Total hits in detector with shielding / Total hits in detector with no shielding
+Transmission_factor_primaries = Hits_primaries / Hits_primaries_noshield    # Primary hits in detector with shielding / Primary hits in detector with no shielding
+Transmission_factor_onlyprotons = Total_protons/ Total_hits_noshield  # Protons (prim+sec) in detector with shielding / Primary protons in detector with no shielding
+Reduction_factor_total = 1 - Transmission_factor_total 
+Reduction_factor_primaries = 1 - Transmission_factor_primaries 
+Secondary_factor_protons = Total_secondaries_protons / Total_hits_noshield
+print("transmission factor prims = ", Transmission_factor_primaries)
+print("transmission factor total = ", Transmission_factor_total)
+print("reduction factor prims = ", Reduction_factor_primaries)
+print("reduction factor total = ", Reduction_factor_total)
 
+print("Trans percentage only protons = ", Transmission_factor_onlyprotons*100)
+
+# Model function: asymptotic regression
+def model_transmission_percentage_total(x, a, b, c):
+    a = 1  # Set a to 1 for the model
+    return (a - b/x**c)*100 
+
+# Fit the model to the data
+popt, pcov = curve_fit(model_transmission_percentage_total, E_gen_protons, Transmission_factor_onlyprotons*100, p0=[1, 1e4, 5], maxfev=10000)
+
+# Print the optimal parameters
+print(f"Fitted parameters: a={popt[0]:.3f}, b={popt[1]:.3f} c={popt[2]:.3f}")
+'''
+plt.figure(figsize=(10, 7))
+plt.scatter(E_gen_protons, Transmission_factor_primaries, color='green', label='Proton simulation data')
+plt.xlabel('Proton Energy (MeV)')
+plt.ylabel('Transmission factor primaries')
+plt.title('Transmission of primary particles through 5mm Aluminium in vacuum')
+plt.legend()
+plt.grid(True)
+'''
+x_values = np.linspace(min(E_gen_protons), max(E_gen_protons), 100)
+
+plt.figure(figsize=(10, 7))
+plt.scatter(E_gen_protons, Transmission_factor_onlyprotons*100, color='green', label='Proton simulation data')
+plt.plot(x_values, model_transmission_percentage_total(x_values, *popt), color='red', label='Fitted Curve')
+plt.xlabel('Proton Energy (MeV)', fontsize=15)
+plt.ylabel('Transmission percentage protons [%]', fontsize=15)
+plt.title('Transmission percentage of protons through 5mm Aluminium in vacuum', fontsize=16)
+plt.legend(fontsize=14)
+plt.grid(True)
+ax = plt.gca()  # Get the current axes
+ax.tick_params(axis='both', which='major', labelsize=12)
+
+
+x_values_validation = E_gen_protons
+y_values_validation = model_transmission_percentage_total(x_values_validation, *popt)
+y_values_clipped = np.maximum(y_values_validation, 0)
+
+print(y_values_clipped)
+
+percentage_error = ((y_values_clipped - Transmission_factor_onlyprotons*100) / (Transmission_factor_onlyprotons*100)) * 100
+
+absolute_error = np.abs(y_values_clipped - Transmission_factor_onlyprotons*100)
+print(f"Absolute error: {absolute_error}")
+
+print(f"Percentage error: {percentage_error}")
+
+mae = np.mean(np.abs(y_values_clipped-Transmission_factor_onlyprotons*100))
+
+print(f"Mean Absolute Error: {mae:.2f}%")
+
+Test = model_transmission_percentage_total(32.095, *popt)
+print(Test)
+'''
 
 # Data electrons
 E_gen_e = np.array([1.0, 3.0, 5.0, 10.0, 20.0])  # in MeV
@@ -57,7 +124,7 @@ initial_guess_photons = [0.03, -2, 1]
 popt_photons, pcov_photons = curve_fit(log_normal, E_gen_photons, Secondary_factor_photons, p0=initial_guess_photons, maxfev=10000)
 
 # Fit cubic polynomial for intensity reduction
-coeffs = np.polyfit(E_gen_protons, Reduction_factor, deg=4)
+coeffs = np.polyfit(E_gen_protons, Reduction_factor_total, deg=4)
 poly_func = np.poly1d(coeffs)
 
 coeffs_e_all = np.polyfit(E_gen_e, Reduction_factor_e_all, deg=4)
@@ -113,7 +180,7 @@ plt.grid(True)
 
 # Plot protons
 plt.figure(figsize=(10, 7))
-plt.scatter(E_gen_protons, Reduction_factor, color='red', label='Data points')
+plt.scatter(E_gen_protons, Reduction_factor_total, color='red', label='Data points')
 plt.plot(x_fit_protons, y_fit_protons, label=f'Fit: a={coeffs}')
 plt.xlabel('Energy before shielding (MeV)')
 plt.ylabel('Intensity Reduction Factor')
@@ -141,5 +208,5 @@ plt.title('Inverse Power Law Fit of Photon Intensity Reduction Factor due to 5mm
 plt.legend()
 plt.grid(True)
 
-
+'''
 plt.show()

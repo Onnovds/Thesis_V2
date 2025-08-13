@@ -66,8 +66,8 @@ std::vector<RunData> loadRuns(const std::vector<float>& energies) {
         run.shielding = "Aluminium 5.0mm";
 
         // Construct the filename
-        run.title = std::string("100k") + run.generatedParticleType + energyStr + "MeV_Al_Slab_5mm_Vacuum_fStopandKill_afterSlab_V4";
-        run.filename = run.title + ".root";
+        run.title = std::string("100k") + run.generatedParticleType + energyStr + "MeV_Al_Slab_5mm_Vacuum_fStopandKill_Omnidirectional";
+        run.filename = std::string("/home/onno/satellite_test/build/") + run.generatedParticleType + "s/" + run.title + ".root";
 
 
         // Open the ROOT file
@@ -148,16 +148,15 @@ void plotEdep(const std::vector<RunData>& runs) {
         // Fill histograms
         for (Long64_t j = 0; j < runs[i].nentries; ++j) {
             runs[i].tree->GetEntry(j);
+            if (Edep>0){
             Edep *= 1000.0; // Convert from MeV to keV
 
             if (ParentID == 0) {
                     hEdep_primary->Fill(Edep);
                 } else {
                     hEdep_secondary->Fill(Edep);
-                }
+                }}
         }
-
-        std::cout << "Mean Edep for primaries " << hEdep_primary->GetEntries() << std::endl;
 
 
         // Style histograms
@@ -167,7 +166,7 @@ void plotEdep(const std::vector<RunData>& runs) {
         hEdep_secondary->SetLineWidth(4);
         hEdep_secondary->SetLineStyle(2); // Dashed line for secondary
 
-        hEdep_primary->SetMaximum(200000);
+        hEdep_primary->SetMaximum(20000);
         hEdep_primary->SetMinimum(1);
         
 
@@ -223,7 +222,7 @@ void plotEdep(const std::vector<RunData>& runs) {
 // Main function to load runs and plot histograms
 void Plots_multiple_Edep() {
     // Define specific energies for the runs
-    std::vector<float> energies = {31.7, 32.5, 35, 40, 50, 70, 100, 200};
+    std::vector<float> energies = {31.7, 32.5, 35, 40, 50, 100, 200};
 
     auto runs = loadRuns(energies);
 
@@ -238,8 +237,11 @@ void Plots_multiple_Edep() {
             TH1* hEdep = (TH1*)gDirectory->Get("hEdep");
 
             if (hEdep) {
+                int lastBin = hEdep->FindLastBinAbove(0); 
                 double mean_Edep = hEdep->GetMean();
+                double max_Edep = hEdep->GetXaxis()->GetBinCenter(lastBin);;
                 std::cout << "Mean Edep: " << mean_Edep << " keV" << std::endl;
+                std::cout << "Max Edep: " << max_Edep*1e3 << " keV" << std::endl;
                 delete hEdep; // Clean up to avoid memory leaks
             } else {
                 std::cerr << "Error: Histogram 'hEdep' not found for run with " 
@@ -256,9 +258,3 @@ void Plots_multiple_Edep() {
 
    
 }
-
-
-
-
-
-
